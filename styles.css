@@ -129,9 +129,6 @@ tbody td { background: var(--accent-soft); font-family: var(--mono); font-size: 
 .score-center { margin: 0 1.5rem; text-align: center; }
 .score-output { padding-top: 0; padding-bottom: 1.5rem; }
 .evidence-columns { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 1rem; padding: 1.5rem; }
-.index-layout { display: flex; align-items: center; gap: 1.5rem; padding: 2rem; }
-.index-layout .node { flex: 1; }
-.index-branch { color: var(--muted); font: 2rem var(--mono); }
 .mode-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 1rem; }
 .mode-grid .diagram { margin: 0; }
 .vertical-flow { padding: 1.5rem; }
@@ -209,8 +206,6 @@ tbody td { background: var(--accent-soft); font-family: var(--mono); font-size: 
   .timeline { grid-template-columns: 1fr; padding: 1.2rem .85rem; }
   .matrix-wrap { padding: 1rem .85rem; }
   th, td { padding: .55rem .65rem; }
-  .index-layout { flex-direction: column; align-items: stretch; padding: 1rem .85rem; gap: .2rem; }
-  .index-branch { transform: rotate(90deg); text-align: center; }
   .vertical-flow { padding: 1rem .85rem; }
   .footer { flex-direction: column; }
 }

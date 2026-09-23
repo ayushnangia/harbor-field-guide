@@ -7,7 +7,7 @@
   <meta name="theme-color" content="#101010">
   <meta name="description" content="A diagram-led guide to Harbor tasks, datasets, adapters, agents, trials, Rewardkit, results, and Harbor Index.">
   <title>Harbor, from task to result</title>
-  <link rel="stylesheet" href="styles.css?v=2">
+  <link rel="stylesheet" href="styles.css?v=3">
   <script src="guide.js" defer></script>
 </head>
 <body>
@@ -119,8 +119,7 @@
 
     <section class="chapter" id="index">
       <div class="chapter-heading"><p class="eyebrow">08 / Harbor Index</p><h2>Framework and benchmark are different things</h2><p class="chapter-intro">Harbor is the reusable runner and task format. Harbor Index is one curated benchmark built on that ecosystem. You can use Harbor without running Index, and an adapted dataset does not become Index.</p></div>
-      <figure class="diagram index-diagram" aria-labelledby="index-title index-caption"><div class="figure-head"><span>Figure 11</span><strong id="index-title">Where Index sits</strong></div><div class="index-layout"><div class="node node-strong"><span class="node-kicker">Framework</span><strong>Harbor</strong><small>Tasks · jobs · trials · results</small></div><div class="index-branch" aria-hidden="true">↳</div><div class="node"><span class="node-kicker">One benchmark</span><strong>Harbor Index</strong><small>Its own tasks and leaderboard rules</small></div></div><figcaption id="index-caption">The <a href="https://github.com/harbor-framework/harbor-index">Index README</a> describes 80 tasks selected from more than 6,000 candidates. A leaderboard submission requires every task, at least five public trials per task, and the required judge setup. That is much more than a first smoke test.</figcaption></figure>
-      <div class="example-strip"><strong>When to use which</strong><p>To learn Harbor, run one existing task. To test your own workflow, write or adapt a task. Use Index when you specifically want its benchmark and are ready to follow its release and submission rules.</p></div>
+      <div class="example-strip"><strong>When to use which</strong><p>To learn Harbor, run one existing task. To test your own workflow, write or adapt a task. Use <a href="https://github.com/harbor-framework/harbor-index">Harbor Index</a> when you want its benchmark and are ready to follow its submission rules.</p></div>
     </section>
 
     <section class="chapter first-run" id="first-run">
