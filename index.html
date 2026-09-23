@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#101010">
+  <meta name="description" content="A diagram-led guide to Harbor tasks, datasets, adapters, agents, trials, Rewardkit, results, and Harbor Index.">
+  <title>Harbor, from task to result</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="guide.js" defer></script>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="topbar" id="top">
+  <a class="wordmark" href="#top">harbor<span>/</span>field guide</a>
+  <span class="topbar-note">Independent explainer</span>
+  <a class="topbar-docs" href="https://docs.harborframework.com/">Official docs ↗</a>
+</header>
+<div class="page-shell">
+  <aside class="contents" aria-label="Guide contents">
+    <p class="rail-title">Table of contents</p>
+    <label class="search-field"><span class="search-icon" aria-hidden="true">⌕</span><input id="concept-search" type="search" placeholder="Find a topic…" aria-label="Find a topic" autocomplete="off"><kbd>/</kbd></label>
+    <p class="search-status" id="search-status" role="status" aria-live="polite"></p>
+    <nav aria-label="Sections">
+      <a href="#overview"><span>00</span> The whole system</a>
+      <a href="#task"><span>01</span> Task</a>
+      <a href="#dataset"><span>02</span> Dataset &amp; adapter</a>
+      <a href="#execution"><span>03</span> Agent &amp; sandbox</a>
+      <a href="#trial"><span>04</span> Trial &amp; job</a>
+      <a href="#scoring"><span>05</span> Verifier &amp; Rewardkit</a>
+      <a href="#results"><span>06</span> Results &amp; regrade</a>
+      <a href="#modes"><span>07</span> Other run modes</a>
+      <a href="#index"><span>08</span> Harbor Index</a>
+      <a href="#first-run"><span>09</span> First run</a>
+    </nav>
+    <p class="rail-foot">Choose a topic or search. Use ← and → to follow the execution flow.</p>
+  </aside>
+  <main id="main" tabindex="-1">
+    <header class="hero" id="overview">
+      <p class="eyebrow">00 / the whole system</p>
+      <h1>Harbor, from task to result.</h1>
+      <p class="lede">Harbor is an evaluation runner. It gives an <a href="#execution">agent</a> a <a href="#task">task</a> in a <a href="#execution">sandbox</a>, runs the task's <a href="#scoring">verifier</a>, and records what happened. This guide follows that path and shows where <a href="#dataset">datasets and adapters</a>, <a href="#scoring">Rewardkit</a>, and <a href="#index">Harbor Index</a> fit.</p>
+      <figure class="diagram system-map" aria-labelledby="system-title system-caption">
+        <div class="figure-head"><span>Figure 01</span><strong id="system-title">The evaluation pipeline</strong></div>
+        <div class="system-inputs">
+          <a class="node" href="#task"><span class="node-kicker">Input</span><strong>Task or dataset</strong><small>What to attempt</small></a>
+          <a class="node" href="#execution"><span class="node-kicker">Input</span><strong>Agent + model</strong><small>Who attempts it</small></a>
+          <a class="node" href="#execution"><span class="node-kicker">Runtime</span><strong>Sandbox</strong><small>Where it works</small></a>
+        </div>
+        <div class="flow-arrow" aria-hidden="true">↓</div>
+        <a class="node node-strong system-trial" href="#trial"><span class="node-kicker">Execution</span><strong>Trial</strong><small>One agent's attempt on one task</small></a>
+        <div class="flow-arrow" aria-hidden="true">↓</div>
+        <div class="system-outputs">
+          <a class="node" href="#scoring"><span class="node-kicker">Check</span><strong>Verifier</strong><small>Evaluates the work</small></a>
+          <a class="node" href="#results"><span class="node-kicker">Record</span><strong>Result + artifacts</strong><small>Score, status, evidence</small></a>
+        </div>
+        <figcaption id="system-caption">An optional <a href="#dataset">adapter</a> prepares tasks before the run. A <a href="#trial">job</a> groups trials. The verifier may use <a href="#scoring">Rewardkit</a>, but it does not have to. Based on Harbor's <a href="https://docs.harborframework.com/core-concepts">core concepts</a>.</figcaption>
+      </figure>
+      <div class="reading-note"><strong>One useful distinction</strong><p>A score answers whether the task's checks passed. A trial record explains whether the agent ran, what it changed, and whether grading itself succeeded. Do not treat a verifier error as a zero score.</p></div>
+    </header>
+
+    <section class="chapter" id="task">
+      <div class="chapter-heading"><p class="eyebrow">01 / task</p><h2>The unit of work</h2><p class="chapter-intro">A task defines an instruction, an <a href="#execution">environment</a>, and a <a href="#scoring">verifier</a>. It lives in a directory, so the prompt is only one part of it. Harbor tasks are meant to stand on their own, outside the runner.</p></div>
+      <figure class="diagram task-diagram" aria-labelledby="task-title task-caption">
+        <div class="figure-head"><span>Figure 02</span><strong id="task-title">Anatomy of a task directory</strong></div>
+        <div class="file-map">
+          <div class="file-tree" aria-label="Example task files"><div class="root-file">my-task/</div><div>├─ instruction.md</div><div>├─ task.toml</div><div>├─ environment/</div><div>│  └─ Dockerfile</div><div>├─ tests/</div><div>│  └─ test.sh</div><div>└─ solution/</div><div>   └─ solve.sh</div></div>
+          <dl class="file-notes"><div><dt>instruction.md</dt><dd>What the agent is asked to do.</dd></div><div><dt>task.toml</dt><dd>Task metadata and limits, such as timeouts and resource settings.</dd></div><div><dt>environment/</dt><dd>The workspace specification. A Dockerfile is common, but other supported specs can be used.</dd></div><div><dt>tests/test.sh</dt><dd>The verifier entry point. It must write a numeric reward file.</dd></div><div><dt>solution/</dt><dd>Optional reference work for the task author, not the answer handed to the agent.</dd></div></dl>
+        </div>
+        <figcaption id="task-caption">The directory can contain more support files. See the <a href="https://docs.harborframework.com/core-concepts/tasks/overview">task format</a> and <a href="https://docs.harborframework.com/core-concepts/tasks/configuration">configuration guide</a>.</figcaption>
+      </figure>
+      <div class="two-up"><div><h3>What the agent sees</h3><p>The instruction tells the agent what outcome to produce. The sandbox gives it files and tools. The task author can choose an environment that makes the work realistic without giving the agent the verifier's answer.</p></div><div><h3>What the verifier sees</h3><p>After the agent phase, <code>tests/test.sh</code> checks the final state. It writes <code>/logs/verifier/reward.txt</code> or <code>reward.json</code>. The verifier is part of the task contract, not a claim the agent makes about its own success.</p></div></div>
+    </section>
+
+    <section class="chapter" id="dataset">
+      <div class="chapter-heading"><p class="eyebrow">02 / dataset &amp; adapter</p><h2>Where tasks come from</h2><p class="chapter-intro">A dataset is a collection of <a href="#task">tasks</a>, usually representing one benchmark. You can author Harbor tasks directly. An adapter is useful when an existing benchmark has another format and needs to be converted.</p></div>
+      <figure class="diagram adapter-diagram" aria-labelledby="adapter-title adapter-caption">
+        <div class="figure-head"><span>Figure 03</span><strong id="adapter-title">Two routes to a dataset</strong></div>
+        <div class="route"><span class="route-label">Write natively</span><div class="route-steps"><div class="node">Author Harbor tasks</div><b aria-hidden="true">→</b><div class="node node-strong">Harbor dataset</div></div></div>
+        <div class="route"><span class="route-label">Adapt an existing benchmark</span><div class="route-steps"><div class="node">Outside benchmark</div><b aria-hidden="true">→</b><div class="node">Adapter</div><b aria-hidden="true">→</b><div class="node">Harbor task directories</div><b aria-hidden="true">→</b><div class="node node-strong">Harbor dataset</div></div></div>
+        <figcaption id="adapter-caption">The adapter belongs to dataset preparation, not the agent's trial. A good conversion preserves the original task intent and grading behavior. Read the <a href="https://github.com/harbor-framework/harbor/blob/main/docs/content/docs/datasets/adapters.mdx">adapter guide</a> and <a href="https://docs.harborframework.com/core-concepts/datasets/datasets">dataset docs</a>.</figcaption>
+      </figure>
+      <div class="example-strip"><strong>Choose by scope</strong><p>Use <code>-t</code> for a published task, <code>-d</code> for a published dataset, or <code>-p</code> for a local task or dataset path. One task is enough to inspect the full loop before running a benchmark.</p></div>
+    </section>
+
+    <section class="chapter" id="execution">
+      <div class="chapter-heading"><p class="eyebrow">03 / agent &amp; sandbox</p><h2>Who works, and where</h2><p class="chapter-intro">The agent is the program that receives the instruction and uses tools. The model powers that agent. The sandbox is the isolated environment in which it works. These are separate choices.</p></div>
+      <figure class="diagram execution-diagram" aria-labelledby="execution-title execution-caption">
+        <div class="figure-head"><span>Figure 04</span><strong id="execution-title">One task, different execution choices</strong></div>
+        <div class="execution-layout"><div class="node task-fixed"><span class="node-kicker">Fixed</span><strong>Task</strong><small>Instruction + verifier</small></div><div class="fork" aria-hidden="true">→</div><div class="execution-options"><div class="node"><span class="node-kicker">Choice A</span><strong>Agent + model</strong><small>Reads, reasons, edits</small></div><div class="node"><span class="node-kicker">Choice B</span><strong>Sandbox</strong><small>Files, tools, resources</small></div></div></div>
+        <figcaption id="execution-caption">Harbor has <a href="https://docs.harborframework.com/core-concepts/agents/pre-integrated-agents">pre-integrated agents</a> and supports custom ones. The sandbox can use a <a href="https://docs.harborframework.com/core-concepts/sandboxes/pre-integrated-sandboxes">supported provider</a> or a custom environment. Changing either choice does not turn the task into a different benchmark.</figcaption>
+      </figure>
+      <div class="two-up"><div><h3>Agent versus model</h3><p><code>-a</code> selects the agent integration; <code>-m</code> selects its model. The agent manages the session and tool calls. The model does not replace the agent's runtime behavior.</p></div><div><h3>Environment versus verifier</h3><p>The agent environment hosts the work. A verifier can run against that environment or in a separate verifier environment. A separate verifier is useful when grading needs its own dependencies or when later regrading should use recorded artifacts.</p></div></div>
+    </section>
+
+    <section class="chapter" id="trial">
+      <div class="chapter-heading"><p class="eyebrow">04 / trial &amp; job</p><h2>One attempt, then many</h2><p class="chapter-intro">A trial is one <a href="#execution">agent</a>'s attempt at one <a href="#task">task</a>. A job collects trials. This distinction matters when you repeat a task, compare agents, or run a <a href="#dataset">dataset</a> concurrently.</p></div>
+      <figure class="diagram timeline-diagram" aria-labelledby="timeline-title timeline-caption"><div class="figure-head"><span>Figure 05</span><strong id="timeline-title">A trial's timeline</strong></div><ol class="timeline"><li><span>01</span><strong>Prepare</strong><small>Load task and start sandbox</small></li><li><span>02</span><strong>Execute</strong><small>Agent works in the environment</small></li><li><span>03</span><strong>Verify</strong><small>Run task checks and read reward</small></li><li><span>04</span><strong>Record</strong><small>Write result, logs, artifacts</small></li></ol><figcaption id="timeline-caption">The <a href="https://docs.harborframework.com/core-concepts/jobs/run-a-job">job runner</a> creates and schedules trials. A trial can fail before grading, during agent work, or during verification. The record is how you tell those apart.</figcaption></figure>
+      <figure class="diagram matrix-diagram" aria-labelledby="matrix-title matrix-caption"><div class="figure-head"><span>Figure 06</span><strong id="matrix-title">A job fans out into trials</strong></div><div class="matrix-wrap"><table><caption>Illustrative job with two tasks and two attempts per task</caption><thead><tr><th scope="col">Task</th><th scope="col">Attempt 1</th><th scope="col">Attempt 2</th></tr></thead><tbody><tr><th scope="row">Task A</th><td>Trial A-1</td><td>Trial A-2</td></tr><tr><th scope="row">Task B</th><td>Trial B-1</td><td>Trial B-2</td></tr></tbody></table></div><figcaption id="matrix-caption">Here, one job contains four trials. <code>-k</code> sets attempts per task, <code>-n</code> limits concurrent trials, and <code>-r</code> configures retries. Attempts and retries are different concepts. See <a href="https://docs.harborframework.com/core-concepts/jobs/run-a-job">job options</a>.</figcaption></figure>
+    </section>
+
+    <section class="chapter" id="scoring">
+      <div class="chapter-heading"><p class="eyebrow">05 / verifier &amp; Rewardkit</p><h2>How work becomes a score</h2><p class="chapter-intro">A verifier evaluates the agent's output and writes a numeric reward. A plain test script can do this directly. Rewardkit is an optional Python package for composing programmatic criteria and judge-based checks.</p></div>
+      <figure class="diagram score-diagram" aria-labelledby="score-title score-caption"><div class="figure-head"><span>Figure 07</span><strong id="score-title">Rewardkit inside a Harbor verifier</strong></div><div class="score-sources"><div class="node"><span class="node-kicker">tests/files.py</span><strong>Programmatic criteria</strong><small>Files, commands, structured output</small></div><div class="node"><span class="node-kicker">tests/quality.toml</span><strong>Judge criteria</strong><small>Model-graded rubric, if configured</small></div></div><div class="flow-arrow" aria-hidden="true">↓</div><div class="node node-strong score-center"><span class="node-kicker">Optional composition</span><strong>tests/reward.toml</strong><small>Weights and aggregation</small></div><div class="flow-arrow" aria-hidden="true">↓</div><div class="score-output"><div class="node"><span class="node-kicker">Written by verifier</span><strong>reward.json</strong><small><code>{ "reward": 0.75 }</code></small></div><div class="node"><span class="node-kicker">Read by Harbor</span><strong>Main reward</strong><small>The <code>reward</code> key</small></div></div><figcaption id="score-caption">This is a shape example, not a score measured for this guide. Rewardkit discovers criteria under <code>/tests</code>, evaluates the workspace, and writes <code>/logs/verifier/reward.json</code>. See its <a href="https://docs.harborframework.com/core-concepts/rewardkit/quick-start">quick start</a>.</figcaption></figure>
+      <div class="two-up"><div><h3>One score or several?</h3><p>Files directly under <code>tests/</code> can combine into a main <code>reward</code>. Subdirectories can produce dimensions such as correctness and quality. Those dimensions do not automatically create the root <code>reward</code> key; add a root aggregation if Harbor should read one main score.</p></div><div><h3>A zero is not an error</h3><p><code>{ "reward": 0 }</code> can be a valid grade. A missing reward file, malformed output, or verifier crash is a grading failure and needs separate diagnosis. Inspect the trial status and verifier logs before comparing scores.</p></div></div>
+      <div class="example-strip"><strong>Cost and isolation</strong><p>Python criteria can be deterministic. Judge criteria need provider credentials and may incur model usage. If a check modifies the workspace, Rewardkit's isolation option can keep that mutation from affecting other criteria.</p></div>
+    </section>
+
+    <section class="chapter" id="results">
+      <div class="chapter-heading"><p class="eyebrow">06 / results &amp; regrade</p><h2>Keep the evidence, not just the number</h2><p class="chapter-intro">A <a href="#trial">job</a> result is useful because you can inspect each trial. The <a href="#scoring">score</a> is only the summary. Logs, collected files, and an optional agent trajectory can show what the agent did and why grading succeeded or failed.</p></div>
+      <figure class="diagram evidence-diagram" aria-labelledby="evidence-title evidence-caption"><div class="figure-head"><span>Figure 08</span><strong id="evidence-title">How to read a trial</strong></div><div class="evidence-columns"><div class="node"><span class="node-kicker">Start here</span><strong>result.json</strong><small>Outcome, reward, errors</small></div><div class="node"><span class="node-kicker">Then inspect</span><strong>Logs + artifacts</strong><small>Agent output, verifier output, collected files</small></div><div class="node"><span class="node-kicker">If available</span><strong>Trajectory</strong><small>Conversation and tool history in ATIF</small></div></div><figcaption id="evidence-caption">Different agents may expose different trajectory detail. Use the <a href="https://docs.harborframework.com/core-concepts/results/view-job-results">results guide</a> and <a href="https://docs.harborframework.com/core-concepts/agents/atif">ATIF docs</a> for the current output format.</figcaption></figure>
+      <figure class="diagram regrade-diagram" aria-labelledby="regrade-title regrade-caption"><div class="figure-head"><span>Figure 09</span><strong id="regrade-title">Regrade without rerunning the agent</strong></div><div class="route-steps"><div class="node">Completed trial + saved artifacts</div><b aria-hidden="true">→</b><div class="node">Updated separate verifier</div><b aria-hidden="true">→</b><div class="node node-strong">New verification result</div></div><figcaption id="regrade-caption">Regrade does not replay the agent. It needs readable source result and artifact manifest files, an updated task with a separate verifier, and every input that verifier requires. Multi-step regrades must keep the same steps. See <a href="https://docs.harborframework.com/core-concepts/jobs/regrade">regrade requirements</a>.</figcaption></figure>
+    </section>
+
+    <section class="chapter" id="modes">
+      <div class="chapter-heading"><p class="eyebrow">07 / other run modes</p><h2>When a single instruction is not enough</h2><p class="chapter-intro">Harbor also supports tasks with milestones and trials where a simulated user talks to the target agent. These are different evaluation designs.</p></div>
+      <div class="mode-grid"><figure class="diagram mode-diagram" aria-labelledby="steps-title steps-caption"><div class="figure-head"><span>Figure 10A</span><strong id="steps-title">Multi-step task</strong></div><div class="vertical-flow"><div class="node">Step 1: instruction + verifier</div><b aria-hidden="true">↓ same workspace</b><div class="node">Step 2: instruction + verifier</div><b aria-hidden="true">↓</b><div class="node node-strong">Trial reward</div></div><figcaption id="steps-caption">The workspace persists. The conversation starts fresh at each step by default, unless the agent supports resume and it is enabled. Harbor can stop early on a minimum reward and use the mean or final executed step score. <a href="https://docs.harborframework.com/core-concepts/tasks/multi-step">Multi-step docs</a>.</figcaption></figure><figure class="diagram mode-diagram" aria-labelledby="user-title user-caption"><div class="figure-head"><span>Figure 10B</span><strong id="user-title">Simulated user</strong></div><div class="vertical-flow"><div class="node">User agent knows task instruction</div><b aria-hidden="true">↓ conversation</b><div class="node">Target agent learns through dialogue</div><b aria-hidden="true">↓</b><div class="node node-strong">Verifier checks target's work</div></div><figcaption id="user-caption">The target does not start with the full task instruction. Harbor pairs it with a user agent, then grades the outcome after their interaction. <a href="https://docs.harborframework.com/core-concepts/jobs/simulate-a-user">Simulated-user docs</a>.</figcaption></figure></div>
+    </section>
+
+    <section class="chapter" id="index">
+      <div class="chapter-heading"><p class="eyebrow">08 / Harbor Index</p><h2>Framework and benchmark are different things</h2><p class="chapter-intro">Harbor is the reusable runner and task format. Harbor Index is one curated benchmark built on that ecosystem. You can use Harbor without running Index, and an adapted dataset does not become Index.</p></div>
+      <figure class="diagram index-diagram" aria-labelledby="index-title index-caption"><div class="figure-head"><span>Figure 11</span><strong id="index-title">Where Index sits</strong></div><div class="index-layout"><div class="node node-strong"><span class="node-kicker">Framework</span><strong>Harbor</strong><small>Tasks · jobs · trials · results</small></div><div class="index-branch" aria-hidden="true">↳</div><div class="node"><span class="node-kicker">One benchmark</span><strong>Harbor Index</strong><small>Its own tasks and leaderboard rules</small></div></div><figcaption id="index-caption">The <a href="https://github.com/harbor-framework/harbor-index">Index README</a> describes 80 tasks selected from more than 6,000 candidates. A leaderboard submission requires every task, at least five public trials per task, and the required judge setup. That is much more than a first smoke test.</figcaption></figure>
+      <div class="example-strip"><strong>When to use which</strong><p>To learn Harbor, run one existing task. To test your own workflow, write or adapt a task. Use Index when you specifically want its benchmark and are ready to follow its release and submission rules.</p></div>
+    </section>
+
+    <section class="chapter first-run" id="first-run">
+      <div class="chapter-heading"><p class="eyebrow">09 / first run</p><h2>A small way to start</h2><p class="chapter-intro">One task gives you a complete trial to inspect. This command is from Harbor's quick start; it has not been run for this page.</p></div>
+      <div class="terminal"><div class="terminal-bar"><span>Example command</span><span>local run</span></div><pre><code>harbor run \
+  -t hello-world/hello-world \
+  -a codex \
+  -m openai/gpt-5.6-luna</code></pre></div>
+      <div class="flag-list"><div><code>-t</code><span>Published task to run</span></div><div><code>-a</code><span>Agent integration</span></div><div><code>-m</code><span>Model used by that agent</span></div></div>
+      <p class="after-command">You need Harbor installed, a working local sandbox such as Docker, and credentials for the chosen model. A real run may incur model charges. Read the <a href="https://docs.harborframework.com/getting-started/quick-start">official quick start</a> before running it.</p>
+    </section>
+    <nav class="page-nav" aria-label="Previous and next topics"><a id="previous-topic" href="#overview"><span>← Previous</span><strong></strong></a><a id="next-topic" href="#task"><span>Next →</span><strong></strong></a></nav>
+    <footer class="footer"><p>Independent guide. It explains documented Harbor behavior, not results from a run performed here. For exact current APIs and options, use the <a href="https://docs.harborframework.com/">official documentation</a> or <a href="https://github.com/harbor-framework/harbor">source code</a>.</p><a href="#top">Back to top ↑</a></footer>
+  </main>
+</div>
+</body>
+</html>
