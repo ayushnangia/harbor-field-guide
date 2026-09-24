@@ -20,7 +20,7 @@ function showChapter() {
       element.querySelector('strong').textContent = links[position].textContent.trim().replace(/^\d+\s*/, '');
     }
   }
-  document.title = `${chapters[index].querySelector('h1, h2').textContent} | Harbor field guide`;
+  document.title = `${chapters[index].querySelector('h1, h2').textContent} | Harbor Field Guide`;
   if (matchMedia('(max-width: 760px)').matches) links[index].scrollIntoView({ block: 'nearest', inline: 'center' });
   window.scrollTo(0, 0);
 }
